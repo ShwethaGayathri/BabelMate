@@ -1,8 +1,13 @@
 import './App.css';
-import React,{useState} from 'react';
+import React,{useState,useEffect} from 'react';
 import axios from "axios"
 
 function App() {
+
+  useEffect(() => {
+  document.title = "BabelMate";
+}, []);
+
   const [input,setInput] = useState("");
   const [targetLang,setTargetLang] = useState("fr");
   const[messages,setMessages] = useState(["BabelMate 😏: Hello! I’m your translation companion — ready to help! ✨"]);
