@@ -16,14 +16,17 @@ app.add_middleware(
 )
 
 # Supported languages
-LANGS = ['fr', 'de', 'es', 'hi', 'zh', 'ar', 'jap', 'vi']
+LANGS = ['fr', 'de', 'es', 'hi', 'zh', 'ar', 'ja', 'vi']
 
 # Load all models and tokenizers into memory (cached)
 MODEL_CACHE = {}
 
 for lang in LANGS:
     try:
-        model_name = f"Helsinki-NLP/opus-mt-en-{lang}"
+        if lang == 'ja':
+            model_name = f"staka/fugumt-en-{lang}"
+        else:
+            model_name = f"Helsinki-NLP/opus-mt-en-{lang}"
         print(f"Loading tokenizer and model for: {lang}")
         tokenizer = MarianTokenizer.from_pretrained(model_name)
         model = MarianMTModel.from_pretrained(model_name)

@@ -20,7 +20,7 @@ function App() {
     es: 'Spanish',
     zh: 'Chinese',
     ar: 'Arabic',
-    jap: 'Japanese',
+    ja: 'Japanese',
     vi: 'Vietnamese',
 
   }
@@ -70,7 +70,7 @@ function App() {
         <option value="hi">Hindi</option>
         <option value="zh">Chinese</option>
         <option value="ar">Arabic</option>
-        <option value="jap">Japanese</option>
+        <option value="ja">Japanese</option>
         <option value="vi">Vietnamese</option>
       </select>
       <button onClick={handleTranslate}>Translate</button>
