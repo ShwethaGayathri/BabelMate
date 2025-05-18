@@ -1,10 +1,19 @@
 from fastapi import FastAPI,Request
 from pydantic import BaseModel
 from transformers import MarianMTModel,MarianTokenizer
+from fastapi.middleware.cors import CORSMiddleware
 
 #The default Model is hugginFace
 #The application will start supporting more models as time progresses
 app= FastAPI()
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 #How the input data should look like for /translate
 class TranslationRequest(BaseModel):
@@ -34,7 +43,7 @@ def translate(request: TranslationRequest):
     translated = model.generate(**inputs)
     translated_text = tokenizer.decode(translated[0],skip_special_tokens=True)
 
-    return {"Transalated Text ": translated_text}
+    return {"translated_text": translated_text}
 
 
 
