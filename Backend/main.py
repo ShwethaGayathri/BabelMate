@@ -1,54 +1,83 @@
-from fastapi import FastAPI,Request
-from pydantic import BaseModel
-from transformers import MarianMTModel,MarianTokenizer
+from fastapi import FastAPI, Request, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+from pydantic import BaseModel
+from transformers import MarianMTModel, MarianTokenizer
+import torch
 
-#The default Model is hugginFace
-#The application will start supporting more models as time progresses
-app= FastAPI()
+app = FastAPI()
 
+# Allow CORS for all origins - you can restrict origins here if you want
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["https://babelmate-frontend.onrender.com","http://localhost:3000"],  
+    allow_origins=["*"],  # change to your frontend domain for security
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-#How the input data should look like for /translate
-class TranslationRequest(BaseModel):
-    text : str
-    target_lang: str
-    model: str = "huggingface"
+# Supported languages
+LANGS = ['fr', 'de', 'es', 'hi', 'zh', 'ar', 'jap', 'vi']
 
-loaded_models = {}
+# Load all models and tokenizers into memory (cached)
+MODEL_CACHE = {}
 
-#Transalation is now from english to any target language
-#Over time this will start incoporating any lang - ang lang translation
-def load_transalation_model(target_lang):
-    model_name = f"Helsinki-NLP/opus-mt-en-{target_lang}"
-    if target_lang not in loaded_models:
+for lang in LANGS:
+    try:
+        model_name = f"Helsinki-NLP/opus-mt-en-{lang}"
+        print(f"Loading tokenizer and model for: {lang}")
         tokenizer = MarianTokenizer.from_pretrained(model_name)
         model = MarianMTModel.from_pretrained(model_name)
-        loaded_models[target_lang] = (tokenizer,model)
-    return loaded_models[target_lang]
+        MODEL_CACHE[lang] = {
+            "tokenizer": tokenizer,
+            "model": model
+        }
+        print(f"✅ Loaded: {model_name}")
+    except Exception as e:
+        print(f"❌ Error loading {lang}: {e}")
 
-@app.api_route("/", methods=["GET", "HEAD"])
-def read_root():
+# Request schema for POST
+class TranslationRequest(BaseModel):
+    text: str
+    target_lang: str
+    model: str = "huggingface"  # optional
+
+@app.get("/")
+async def root():
     return {"message": "BabelMate Backend is up and running!"}
 
 @app.post("/translate")
-def translate(request: TranslationRequest):
+async def translate_text(request: TranslationRequest):
     text = request.text
     target_lang = request.target_lang
-    tokenizer,model = load_transalation_model(target_lang)
 
-    inputs = tokenizer(text, return_tensors="pt",padding=True)
-    translated = model.generate(**inputs)
-    translated_text = tokenizer.decode(translated[0],skip_special_tokens=True)
+    if target_lang not in MODEL_CACHE:
+        raise HTTPException(status_code=400, detail=f"Unsupported language: {target_lang}")
 
-    return {"translated_text": translated_text}
+    tokenizer = MODEL_CACHE[target_lang]["tokenizer"]
+    model = MODEL_CACHE[target_lang]["model"]
 
+    inputs = tokenizer(text, return_tensors="pt", padding=True, truncation=True)
+    with torch.no_grad():
+        translated = model.generate(**inputs)
+    output = tokenizer.decode(translated[0], skip_special_tokens=True)
 
+    return {"translated_text": output}
 
+# Support GET /translate?text=...&target_lang=...
+@app.get("/translate")
+async def translate_get(text: str, target_lang: str):
+    if target_lang not in MODEL_CACHE:
+        raise HTTPException(status_code=400, detail=f"Unsupported language: {target_lang}")
+
+    tokenizer = MODEL_CACHE[target_lang]["tokenizer"]
+    model = MODEL_CACHE[target_lang]["model"]
+
+    inputs = tokenizer(text, return_tensors="pt", padding=True, truncation=True)
+    with torch.no_grad():
+        translated = model.generate(**inputs)
+    output = tokenizer.decode(translated[0], skip_special_tokens=True)
+
+    return {"translated_text": output}
+
+# HEAD requests are handled automatically by FastAPI and Starlette for these routes
 
