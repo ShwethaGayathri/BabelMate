@@ -31,9 +31,9 @@ function App() {
     const userMessage = `You 🥰: ${input}`;
     setMessages((prev) => [...prev,userMessage])
     try{
-      const res =  await axios.post(" https://babelmate-backend.onrender.com/translate",{
-        // https://babelmate-backend.onrender.com
-        // http://localhost:8000/translate
+      const res =  await axios.post("https://babelmate-backend.onrender.com/translate",{
+        // http://localhost:8000
+        //https://babelmate-backend.onrender.com
         text: input,
         target_lang: targetLang,
         model: "huggingface",
