@@ -65,13 +65,13 @@ function App() {
         <select value={targetLang} onChange={(e) =>setTargetLang(e.target.value)}>
         <option value="fr">French</option>
         <option value="de">German</option>
-        <option value="es">Spanish</option>
+        {/* <option value="es">Spanish</option> */}
         {/* <option value="ta">Tamil</option> */}
         <option value="hi">Hindi</option>
-        <option value="zh">Chinese</option>
+        {/* <option value="zh">Chinese</option>
         <option value="ar">Arabic</option>
         <option value="jap">Japanese</option>
-        <option value="vi">Vietnamese</option>
+        <option value="vi">Vietnamese</option> */}
       </select>
       <button onClick={handleTranslate}>Translate</button>
      </div>
