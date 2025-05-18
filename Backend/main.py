@@ -33,6 +33,10 @@ def load_transalation_model(target_lang):
         loaded_models[target_lang] = (tokenizer,model)
     return loaded_models[target_lang]
 
+@app.get("/")
+def read_root():
+    return {"message": "BabelMate Backend is up and running!"}
+
 @app.post("/translate")
 def translate(request: TranslationRequest):
     text = request.text
