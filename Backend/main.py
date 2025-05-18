@@ -9,7 +9,7 @@ app= FastAPI()
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["https://babelmate-frontend.onrender.com"," http://localhost:3000"],  
+    allow_origins=["https://babelmate-frontend.onrender.com","http://localhost:3000"],  
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -33,7 +33,7 @@ def load_transalation_model(target_lang):
         loaded_models[target_lang] = (tokenizer,model)
     return loaded_models[target_lang]
 
-@app.get("/")
+@app.api_route("/", methods=["GET", "HEAD"])
 def read_root():
     return {"message": "BabelMate Backend is up and running!"}
 
